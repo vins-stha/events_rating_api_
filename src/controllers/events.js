@@ -47,8 +47,7 @@ export const addVote = async(
 };
 
 // get list of suitable events for all users
-// get all list of events
-export const getFinalEvent = async(
+export const getFinalResultsOfEvent = async(
     req, res, next
 ) => {
     console.log('list of all events');
