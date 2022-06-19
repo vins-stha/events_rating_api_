@@ -13,4 +13,5 @@ router.delete('/:eventId', deleteEventById);
 router.post('/:eventId/vote', addVote);
 router.get('/:eventId/results', getFinalResultsOfEvent);
 
- export default eventRouter
+export default eventRouter
+
