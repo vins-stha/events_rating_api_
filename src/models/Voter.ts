@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/member-delimiter-style */
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document } from 'mongoose'
 
 export type VoterDocument = Document & {
   name: string;
@@ -10,6 +10,6 @@ const voterSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-});
+})
 
-export default mongoose.model<VoterDocument>("Voter", voterSchema);
+export default mongoose.model<VoterDocument>('Voter', voterSchema)
