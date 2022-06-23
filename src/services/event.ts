@@ -11,8 +11,10 @@ const findById = async (id: string): Promise<EventDocument | any> => {
     throw new NotFoundError("Event not found")
   }
 
-  return await Event
+  const result = await Event
       .findOne({_id: id}, {"_id": 0, "__v": 0})
+      .populate("votes", {"_id":0, "__v":0, "eventId":0})
+  return result
 }
 
 const findAll = async (): Promise<EventDocument[]> => {
