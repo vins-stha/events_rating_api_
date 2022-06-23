@@ -7,7 +7,7 @@ import EventService from '../services/Event'
 import VoteService from '../services/Vote'
 
 import {BadRequestError} from '../helpers/apiError'
-import { NotFoundError } from '../helpers/apiError'
+import {NotFoundError} from '../helpers/apiError'
 
 
 // GET /Events
@@ -33,14 +33,14 @@ export const getEventIdOrId = async (
 ) => {
     try {
         let event
-        if (eventId !== null )
-           event = await Event.findOne( {eventId: eventId} );
+        if (eventId !== null)
+            event = await Event.findOne({eventId: eventId});
         else
-            event = await Event.findOne({_id:id})
+            event = await Event.findOne({_id: id})
         if (!event) {
             throw new NotFoundError("Event nof found for given id")
         }
-        return id === null ?  event?._id : event?.eventId
+        return id === null ? event?._id : event?.eventId
     } catch (e) {
         return e
     }
@@ -54,8 +54,6 @@ export const findById = async (
     next: NextFunction
 ) => {
     try {
-        // let test = await getEventIdFrom_id("62b3251d7afbf92bc80646b2", null);
-        // console.log("TEST", test)
         let id = await getEventIdOrId(null, parseInt(req.params.eventId))
         res.json(await EventService.findById(id))
     } catch (error) {
@@ -77,16 +75,14 @@ export const createEvent = async (
     try {
         const {name, dates} = req.body;
         let lastEventId: number = 0;
-        let votes=[] as string[]
+        let votes = [] as string[]
 
-        if (await EventService.getLastEventId() || await EventService.getLastEventId() !== null ) {
-            let event: Promise<EventDocument> | any = await EventService.getLastEventId()
+        if (await EventService.getLastEventId() || await EventService.getLastEventId() !== null) {
+            let event: Promise<EventDocument> | any = await EventService.getLastEventId();
             lastEventId = event.eventId
         }
 
-        let eventId: number = lastEventId + 1
-
-         // create votes
+        let eventId: number = lastEventId + 1;
 
         await dates.map(async (date: string) => {
             const vote = new Vote({
@@ -95,13 +91,13 @@ export const createEvent = async (
                 eventId: eventId
             });
 
-            let newVote = await VoteService.create(vote)
+            let newVote = await VoteService.create(vote);
 
-            await votes.push(newVote._id)
+            await votes.push(newVote._id);
 
         });
 
-        setTimeout(async()=>{
+        setTimeout(async () => {
 
             const event = new Event({
                 name,
@@ -111,11 +107,11 @@ export const createEvent = async (
             });
 
             let result = await EventService.create(event)
-            let createSuccess =  (result instanceof Event) ? true : false
+            let createSuccess = (result instanceof Event) ? true : false
             if (createSuccess) {
             }
 
-            res.json(createSuccess ? await result:  {id: eventId})
+            res.json(createSuccess ? await result : {id: eventId})
 
         }, 1000)
 
@@ -139,32 +135,29 @@ export const addVote = async (
     req: Request,
     res: Response,
     next: NextFunction
-)=>{
+) => {
     try {
         const eventId = parseInt(req.params.eventId)
         const {name, votes} = req.body
 
         let foundEvent = await Event.findOne({eventId: eventId}).populate('votes')
 
-        if (!foundEvent){
+        if (!foundEvent) {
             throw new NotFoundError('Could not find the event with given id')
         }
         console.log(foundEvent)
         // find the votes to update
         let foundVotes = await VoteService.findVotesByEventId(eventId)
 
-        if(foundVotes)
-        {
+        if (foundVotes) {
             // console.log('found votes',foundVotes)
-            votes.map(async(v:string)=>{
-                let vote = foundVotes.filter((vote:VoteDocument) => vote.date === v) as VoteDocument[]
+            votes.map(async (v: string) => {
+                let vote = foundVotes.filter((vote: VoteDocument) => vote.date === v) as VoteDocument[]
                 console.log('correct vote =', vote)
                 // update vote item
-                if(vote && vote.length > 0)
-                {
-                    let nameExists = vote[0]?.people && vote[0]?.people.filter((n:string) =>n === name )
-                    if (!((nameExists && nameExists.length > 0)))
-                    {
+                if (vote && vote.length > 0) {
+                    let nameExists = vote[0]?.people && vote[0]?.people.filter((n: string) => n === name)
+                    if (!((nameExists && nameExists.length > 0))) {
                         vote[0]?.people?.push(name)
                         vote[0].save()
 
@@ -175,7 +168,7 @@ export const addVote = async (
 
         }
 
-        return  res.json(foundEvent)
+        return res.json(foundEvent)
 
     } catch (error) {
         if (error instanceof Error && error.name == 'ValidationError') {
@@ -185,12 +178,6 @@ export const addVote = async (
         }
     }
 }
-
-
-
-
-
-
 
 
 // PUT /Events/:EventId
