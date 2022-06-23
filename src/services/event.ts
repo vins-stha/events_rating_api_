@@ -1,31 +1,31 @@
 import Event, { EventDocument } from '../models/Event'
 import { NotFoundError } from '../helpers/apiError'
-import VoteService from '../services/Vote'
+import VoterService from '../services/Voter'
+import {VoterDocument} from "../models/Voter";
 
-// Customer.findOne({}).populate('created_by', 'name email', User)
 const findById = async (id: string): Promise<EventDocument | any> => {
 
-  const foundEvent = await Event
-      .findOne({_id: id})
-      .populate("votes")
-
+  const foundEvent = await Event.findOne({"_id": id})
+  console.log('foundevent ?', foundEvent)
   if (!foundEvent) {
-    throw new NotFoundError(`Event  not found`)
+    throw new NotFoundError("Event not found")
   }
-  return foundEvent
+
+  const result = await Event
+      .findOne({_id: id}, {"_id": 0, "__v": 0})
+      .populate("votes", {"_id":0, "__v":0, "eventId":0})
+  return result
 }
 
 const findAll = async (): Promise<EventDocument[]> => {
-  return Event.find( {},{"_id":0,  "dates":0, "__v":0}).sort({ name: 1}).populate('votes')
+  return Event.find( {},{"_id":0,  "dates":0, "__v":0, "votes":0}).sort({ name: 1});//.populate('votes')
 
 };
 
-
-
 const create = async (event: EventDocument): Promise<EventDocument> => {
-  console.log('saving....', event,'.......')
+
   try {
-    let result: Promise<EventDocument> =   event.save();
+    let result: Promise<EventDocument> =  event.save();
     return result
   }catch(error){return error}
 
@@ -36,15 +36,46 @@ const addVote = async (Event: EventDocument): Promise<EventDocument> => {
 }
 
 
+const getResults = async (eventId:number): Promise<EventDocument[] | any> => {
 
-const getResults = async (): Promise<EventDocument[]> => {
-  return Event.find().sort({ name: 1})
+  const eventExists = await Event.findOne({eventId: eventId});
+
+  if(!eventExists)
+  {
+    throw new NotFoundError("Event does not exist")
+  }
+
+  const allVoters  = await VoterService.findAll();
+  let votersArray:string[] = []
+  if(allVoters && allVoters.length > 0)
+  {
+    allVoters?.map((voter:VoterDocument) =>{
+      votersArray.push(voter.name)
+    })
+  }
+  console.log('voterlsit', votersArray)
+
+  const foundEvent = await Event
+      .findOne({eventId: eventId})
+      .populate({
+        path:"votes",
+        match: {"people":{"$all":  [ 'Edison123!', 'Edison23!', 'Thomas' ]} }
+
+        // find: {"people":  {$elemMatch: {"p": {$in:votersArray}}} } //{ $eq: JSON.stringify(votersArray)}}
+      })
+  console.log('Fnal results', foundEvent)
+  return Event
+      .findOne({eventId: eventId})
+      .populate({
+        path: "votes",
+        match: {people: {$eq: votersArray}}
+      })
 };
 
 
 const update = async (
     event_id: string,
-  update: Partial<EventDocument>
+    update: Partial<EventDocument>
 ): Promise<EventDocument | null> => {
   const foundEvent = await Event.findByIdAndUpdate(event_id, update, {
     new: true,
@@ -73,7 +104,7 @@ const getLastEventId = async():Promise<EventDocument | null >=>{
     // let event:Promise<EventDocument> | any = await Event.findOne({$query:{}, $orderby:{$natural:-1}});
     let events = await Event.find();
     if(events.length > 0){
-        return events[events.length -1]
+      return events[events.length -1]
     }
 
     return null

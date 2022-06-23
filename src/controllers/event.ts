@@ -1,13 +1,19 @@
-import {Request, Response, NextFunction} from 'express'
+import { Request, Response, NextFunction } from 'express'
 
-import Event, {EventDocument} from '../models/Event'
-import Vote, {VoteDocument} from '../models/Vote'
+import Event, { EventDocument } from '../models/Event'
+import Vote, { VoteDocument } from '../models/Vote'
+import Voter, { VoterDocument } from '../models/Voter'
+
+import {isNewVoter} from "./voter";
+
 
 import EventService from '../services/Event'
 import VoteService from '../services/Vote'
+import VoterService from '../services/Voter'
 
-import {BadRequestError} from '../helpers/apiError'
-import {NotFoundError} from '../helpers/apiError'
+
+import { BadRequestError } from '../helpers/apiError'
+import { NotFoundError } from '../helpers/apiError'
 
 
 // GET /Events
@@ -25,7 +31,7 @@ export const findAll = async (
             next(error)
         }
     }
-};
+}
 
 export const getEventIdOrId = async (
     id: string | null,
@@ -33,18 +39,15 @@ export const getEventIdOrId = async (
 ) => {
     try {
         let event
-        if (eventId !== null)
-            event = await Event.findOne({eventId: eventId});
-        else
-            event = await Event.findOne({_id: id})
+        if (eventId !== null) event = await Event.findOne({ eventId: eventId })
+        else event = await Event.findOne({ _id: id })
         if (!event) {
-            throw new NotFoundError("Event nof found for given id")
+            throw new NotFoundError('Event nof found for given id')
         }
         return id === null ? event?._id : event?.eventId
     } catch (e) {
         return e
     }
-
 }
 
 // GET /Events/:EventId
@@ -53,6 +56,20 @@ export const findById = async (
     res: Response,
     next: NextFunction
 ) => {
+    try {
+        const id = await getEventIdOrId(null, parseInt(req.params.eventId));
+        if (id instanceof NotFoundError)
+        {
+            throw new NotFoundError("Event not found")
+        }
+        res.json(await EventService.findById(id))
+    } catch (error) {
+        if (error instanceof Error && error.name == 'ValidationError') {
+            next(new BadRequestError('Invalid Request', error))
+        } else {
+            next(error)
+        }
+    }
     try {
         let id = await getEventIdOrId(null, parseInt(req.params.eventId))
         res.json(await EventService.findById(id))
@@ -88,9 +105,8 @@ export const createEvent = async (
             const vote = new Vote({
                 people: [],
                 date: date,
-                eventId: eventId
-            });
-
+                eventId: eventId,
+            })
             let newVote = await VoteService.create(vote);
 
             await votes.push(newVote._id);
@@ -109,9 +125,10 @@ export const createEvent = async (
             let result = await EventService.create(event)
             let createSuccess = (result instanceof Event) ? true : false
             if (createSuccess) {
+
             }
 
-            res.json(createSuccess ? await result : {id: eventId})
+            res.json(!createSuccess ?  result : {id: eventId})
 
         }, 1000)
 
@@ -123,13 +140,6 @@ export const createEvent = async (
         }
     }
 };
-
-/**
- *
- * For Single Update : db.collection_name.update({ field_name_1: ("value")}, { $set: { field_name_2 : "new_value"  }});
-
- For MultiUpdate : db.collection_name.updateMany({ field_name_1: ("value")}, { $set: {field_name_2 : "new_value" }});
- * **/
 
 export const addVote = async (
     req: Request,
@@ -153,22 +163,32 @@ export const addVote = async (
             // console.log('found votes',foundVotes)
             votes.map(async (v: string) => {
                 let vote = foundVotes.filter((vote: VoteDocument) => vote.date === v) as VoteDocument[]
-                console.log('correct vote =', vote)
                 // update vote item
                 if (vote && vote.length > 0) {
-                    let nameExists = vote[0]?.people && vote[0]?.people.filter((n: string) => n === name)
+                    let nameExists = vote[0]?.people && vote[0]?.people.filter((n: string) => n === name);
+
+                    let voterExists = await isNewVoter(name);
+                    console.log('Voter exist.= ', voterExists)
+
+                    if(!voterExists)
+                    {
+                        console.log('creating voter...')
+                        const newVoter = new Voter({name})
+                        VoterService.create(newVoter)
+                    }
+                    console.log('NOT creating voter...')
+
                     if (!((nameExists && nameExists.length > 0))) {
                         vote[0]?.people?.push(name)
                         vote[0].save()
 
                     }
-
                 }
             })
 
         }
 
-        return res.json(foundEvent)
+        return res.json(await EventService.findById(foundEvent._id))
 
     } catch (error) {
         if (error instanceof Error && error.name == 'ValidationError') {
@@ -189,7 +209,7 @@ export const updateEvent = async (
     try {
         const update = req.body
         const EventId = parseInt(req.params.EventId)
-        const event_id = await getEventIdOrId(null, EventId);
+        const event_id = await getEventIdOrId(null, EventId)
         const updatedEvent = await EventService.update(event_id, update)
         res.json(updatedEvent)
     } catch (error) {
@@ -219,21 +239,14 @@ export const deleteEvent = async (
     }
 }
 
-
-// async (Event: EventDocument): Promise<EventDocument>
-// get event counts
-// const getEventCounts = async():Promise<number>=>{
-//   let query:any = await EventService.findAll()
-//   return query
-// }
 // GET /Events Results
 export const getResults = async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
 ) => {
     try {
-        res.json(await EventService.getResults())
+        res.json(await EventService.getResults(parseInt(req.params.eventId)))
     } catch (error) {
         if (error instanceof Error && error.name == 'ValidationError') {
             next(new BadRequestError('Invalid Request', error))
@@ -241,4 +254,5 @@ export const getResults = async (
             next(error)
         }
     }
-};
+}
+
