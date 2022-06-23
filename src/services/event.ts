@@ -36,7 +36,15 @@ const addVote = async (Event: EventDocument): Promise<EventDocument> => {
 }
 
 
-const getResults = async (eventId:number): Promise<EventDocument[]> => {
+const getResults = async (eventId:number): Promise<EventDocument[] | any> => {
+
+  const eventExists = await Event.findOne({eventId: eventId});
+
+  if(!eventExists)
+  {
+    throw new NotFoundError("Event does not exist")
+  }
+
   const allVoters  = await VoterService.findAll();
   let votersArray:string[] = []
   if(allVoters && allVoters.length > 0)
@@ -51,10 +59,17 @@ const getResults = async (eventId:number): Promise<EventDocument[]> => {
       .findOne({eventId: eventId})
       .populate({
         path:"votes",
-        match: {people:  {$eq: JSON.stringify(votersArray)} } //{ $eq: JSON.stringify(votersArray)}}
+        match: {"people":{"$all":  [ 'Edison123!', 'Edison23!', 'Thomas' ]} }
+
+        // find: {"people":  {$elemMatch: {"p": {$in:votersArray}}} } //{ $eq: JSON.stringify(votersArray)}}
       })
   console.log('Fnal results', foundEvent)
-  return Event.find().sort({ name: 1})
+  return Event
+      .findOne({eventId: eventId})
+      .populate({
+        path: "votes",
+        match: {people: {$eq: votersArray}}
+      })
 };
 
 
