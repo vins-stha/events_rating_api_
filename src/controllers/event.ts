@@ -6,8 +6,7 @@ import Voter, { VoterDocument } from '../models/Voter'
 
 import EventService from '../services/event'
 import VoteService from '../services/vote'
-import VoterService from '../services/voter'
-
+import VoterService from '../services/voter';
 
 import { BadRequestError } from '../helpers/apiError'
 import { NotFoundError } from '../helpers/apiError'
