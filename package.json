@@ -20,6 +20,7 @@
   "dependencies": {
     "@types/jsonwebtoken": "^8.3.7",
     "@types/lusca": "^1.7.0",
+    "@types/superagent": "^4.1.14",
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
@@ -45,6 +46,7 @@
     "@types/nodemailer": "^6.4.0",
     "@types/passport": "^1.0.2",
     "@types/passport-local": "^1.0.33",
+    "@types/prettier": "2.6.0",
     "@types/supertest": "^2.0.8",
     "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^2.21.0",

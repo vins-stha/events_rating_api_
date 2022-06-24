@@ -30,7 +30,7 @@ export const findVotesByEventId = async (
     next: NextFunction
 ) => {
   try {
-    res.json(await VoteService.findVoteByEventId(parseInt(req.params.eventId)))
+    res.json(await VoteService.findVotesByEventId(parseInt(req.params.eventId)))
   } catch (error) {
     if (error instanceof Error && error.name == 'ValidationError') {
       next(new BadRequestError('Invalid Request', error))
