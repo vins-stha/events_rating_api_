@@ -99,8 +99,8 @@
   
       "2022-01-12"
   
-    ]  
-  }`
+      ]  
+    }
   
   Response:
  ` {
@@ -191,7 +191,6 @@
    - Responds with dates that are suitable for all participants.
    - Example response 
     
-  
     {
  
     "id": 0,
@@ -220,11 +219,11 @@
  
      }
  
-     ]
+    ]
  
     }`
  
  
  ## Deployed version can ve viewd here:
-` _**https://event-rating-api.herokuapp.com/api/v1/{endpoints}`_**
+    https://event-rating-api.herokuapp.com/api/v1/event/1
  
