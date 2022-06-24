@@ -4,7 +4,7 @@ import {
   findVotesByEventId,
   findAll,
   updateVote,
-    addVote,
+  addVote,
   deleteVote
 } from '../controllers/vote'
 

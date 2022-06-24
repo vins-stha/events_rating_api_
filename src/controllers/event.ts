@@ -4,9 +4,6 @@ import Event, { EventDocument } from '../models/Event'
 import Vote, { VoteDocument } from '../models/Vote'
 import Voter, { VoterDocument } from '../models/Voter'
 
-import {isNewVoter} from "./voter";
-
-
 import EventService from '../services/Event'
 import VoteService from '../services/Vote'
 import VoterService from '../services/Voter'
@@ -159,24 +156,21 @@ export const addVote = async (
         // find the votes to update
         let foundVotes = await VoteService.findVotesByEventId(eventId)
 
+        // check if voter exist; if not add to the list
+        const voterExists = await VoterService.findVoterByName(name);
+        if (voterExists === null)
+        {
+            const newVoter = new Voter({name})
+            await VoterService.create(newVoter)
+        }
+
         if (foundVotes) {
-            // console.log('found votes',foundVotes)
-            votes.map(async (v: string) => {
-                let vote = foundVotes.filter((vote: VoteDocument) => vote.date === v) as VoteDocument[]
+            votes.map(async (date: string) => {
+                let vote = foundVotes.filter((vote: VoteDocument) => vote.date === date) as VoteDocument[]
                 // update vote item
                 if (vote && vote.length > 0) {
+
                     let nameExists = vote[0]?.people && vote[0]?.people.filter((n: string) => n === name);
-
-                    let voterExists = await isNewVoter(name);
-                    console.log('Voter exist.= ', voterExists)
-
-                    if(!voterExists)
-                    {
-                        console.log('creating voter...')
-                        const newVoter = new Voter({name})
-                        VoterService.create(newVoter)
-                    }
-                    console.log('NOT creating voter...')
 
                     if (!((nameExists && nameExists.length > 0))) {
                         vote[0]?.people?.push(name)
