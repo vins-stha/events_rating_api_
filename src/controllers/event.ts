@@ -23,7 +23,7 @@ export const findAll = async (
     next: NextFunction
 ) => {
     try {
-        res.json(await EventService.findAll())
+        res.json({"events": await EventService.findAll()})
     } catch (error) {
         if (error instanceof Error && error.name == 'ValidationError') {
             next(new BadRequestError('Invalid Request', error))

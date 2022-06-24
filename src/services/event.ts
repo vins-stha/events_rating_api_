@@ -6,19 +6,26 @@ import {VoterDocument} from "../models/Voter";
 const findById = async (id: string): Promise<EventDocument | any> => {
 
   const foundEvent = await Event.findOne({"_id": id})
-  console.log('foundevent ?', foundEvent)
   if (!foundEvent) {
     throw new NotFoundError("Event not found")
   }
 
   const result = await Event
       .findOne({_id: id}, {"_id": 0, "__v": 0})
-      .populate("votes", {"_id":0, "__v":0, "eventId":0})
+      .populate({
+        path: "votes",
+        select: {"_id": 0, "__v": 0, "eventId": 0},
+        match: {
+          "people": {
+            $elemMatch: {$ne: []}
+          }
+        }
+      });
   return result
 }
 
 const findAll = async (): Promise<EventDocument[]> => {
-  return Event.find( {},{"_id":0,  "dates":0, "__v":0, "votes":0}).sort({ name: 1});//.populate('votes')
+  return Event.find( {},{"_id":0,  "dates":0, "__v":0, "votes":0})//.populate('votes')
 
 };
 
@@ -56,19 +63,22 @@ const getResults = async (eventId:number): Promise<EventDocument[] | any> => {
   console.log('voterlsit', votersArray)
 
   const foundEvent = await Event
-      .findOne({eventId: eventId})
-      .populate({
-        path:"votes",
-        match: {"people":{"$all":  [ 'Edison123!', 'Edison23!', 'Thomas' ]} }
-
-        // find: {"people":  {$elemMatch: {"p": {$in:votersArray}}} } //{ $eq: JSON.stringify(votersArray)}}
-      })
-  console.log('Fnal results', foundEvent)
-  return Event
-      .findOne({eventId: eventId})
+      .findOne({eventId: eventId}, {"_id": 0, "__v": 0})
       .populate({
         path: "votes",
-        match: {people: {$eq: votersArray}}
+        match: {"people": {$all: votersArray}}
+
+      })
+  return Event
+      .findOne({eventId: eventId}, {"_id": 0, "__v": 0, "dates": 0})
+      .populate({
+        path: "votes",
+        select: {"date": 1,  "people":1, "_id":0},
+        match: {
+          "people": {
+            $all: votersArray
+          }
+        }
       })
 };
 
