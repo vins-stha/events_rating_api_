@@ -1,6 +1,6 @@
 import Event, { EventDocument } from '../models/Event'
 import { NotFoundError } from '../helpers/apiError'
-import VoterService from '../services/Voter'
+import VoterService from '../services/voter'
 import {VoterDocument} from "../models/Voter";
 
 const findById = async (id: string): Promise<EventDocument | any> => {

@@ -4,10 +4,9 @@ import Event, { EventDocument } from '../models/Event'
 import Vote, { VoteDocument } from '../models/Vote'
 import Voter, { VoterDocument } from '../models/Voter'
 
-import EventService from '../services/Event'
-import VoteService from '../services/Vote'
-import VoterService from '../services/Voter'
-
+import EventService from '../services/event'
+import VoteService from '../services/vote'
+import VoterService from '../services/voter';
 
 import { BadRequestError } from '../helpers/apiError'
 import { NotFoundError } from '../helpers/apiError'
