@@ -43,6 +43,7 @@ export const getEventIdOrId = async (
         }
         return id === null ? event?._id : event?.eventId
     } catch (e) {
+        console.log("Error occured while fetching id")
         return e
     }
 }
@@ -67,18 +68,7 @@ export const findById = async (
             next(error)
         }
     }
-    try {
-        let id = await getEventIdOrId(null, parseInt(req.params.eventId))
-        res.json(await EventService.findById(id))
-    } catch (error) {
-        if (error instanceof Error && error.name == 'ValidationError') {
-            next(new BadRequestError('Invalid Request', error))
-        } else {
-            next(error)
-        }
-    }
 }
-
 
 // POST /Events
 export const createEvent = async (
@@ -121,9 +111,6 @@ export const createEvent = async (
 
             let result = await EventService.create(event)
             let createSuccess = (result instanceof Event) ? true : false
-            if (createSuccess) {
-
-            }
 
             res.json(!createSuccess ?  result : {id: eventId})
 
