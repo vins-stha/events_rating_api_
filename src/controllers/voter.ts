@@ -30,12 +30,18 @@ export const addVoter = async (
     try {
         const { name } = req.body
 
-        const voter = new Voter({
-            name: name,
-        })
+        let voterExists = isNewVoter(name)
+        if (!voterExists || voterExists === null)
+        {
+            const voter = new Voter({
+                name: name,
+            })
+            await VoterService.create(voter)
+            res.json(voter)
+        }
 
-        await VoterService.create(voter)
-        res.json(voter)
+        res.json("User exists")
+
     } catch (error) {
         if (error instanceof Error && error.name == 'ValidationError') {
             next(new BadRequestError('Invalid Request', error))
@@ -63,14 +69,13 @@ export const deleteVoterByName = async (
     }
 }
 
-
 export const isNewVoter = async(name: string) => {
     try {
         const list =  await VoterService.findAll();
-        console.log('voeters', list)
-        if(list && list.length >0){
-            const exist = list?.filter((voter: VoterDocument) => voter.name === name)
-            if(exist && exist.length > 0)
+        if(list && list.length > 0){
+            const exist = list?.filter((voter: VoterDocument) => voter.name === name);
+
+            if (exist && exist.length > 0)
             {
                 return true
             }
@@ -78,7 +83,7 @@ export const isNewVoter = async(name: string) => {
         }
     }catch (e) {
         console.log("Error", e)
-
+        throw new BadRequestError(e)
     }
 
 }

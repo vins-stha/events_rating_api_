@@ -1,4 +1,3 @@
-import Event, { EventDocument } from '../models/Event'
 import Vote, { VoteDocument } from '../models/Vote'
 import { NotFoundError } from '../helpers/apiError'
 
@@ -17,28 +16,18 @@ const findVotesByEventId = async (eventId: number): Promise<VoteDocument[]> => {
 
   return  foundEventVotes
 }
-// const findVotesByEventId = async (event_Id: string): Promise<VoteDocument[]> => {
-//   let foundEventVotes = await Vote.find({eventId: event_Id});
-//
-//   if (!foundEventVotes) {
-//     throw new NotFoundError(`Event ${event_Id} not found`)
-//   }
-//
-//   return  foundEventVotes
-// }
-
 
 const create = async (newVote: VoteDocument): Promise<VoteDocument> => {
 
-
   let result: Promise<VoteDocument> = newVote.save();
-
 
   return result
 };
 
 const getResults = async (): Promise<VoteDocument[]> => {
+
   return Vote.find().sort({ name: 1})
+
 };
 
 
@@ -49,7 +38,7 @@ const updateById = async (
 ): Promise<VoteDocument | null> => {
   const foundEventVote = await Vote.findByIdAndUpdate({eventId: eventId, _id: voteId}, update, {
     new: true,
-  })
+  });
 
   if (!foundEventVote) {
     throw new NotFoundError(`Event ${eventId} not found`)
@@ -59,11 +48,13 @@ const updateById = async (
 }
 
 const deleteVoteById = async (eventId: number, voteId: string): Promise<VoteDocument | null> => {
-  // const foundEvent = Vote.findByIdAndDelete(eventId)
+
   const foundVote = await Vote.findOne({eventId: eventId, _id:voteId})
+
   if (!foundVote) {
     throw new NotFoundError(`Event ${eventId} not found`)
   }
+
   foundVote.remove();
 
   return foundVote

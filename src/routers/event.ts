@@ -6,8 +6,8 @@ import {
   deleteEvent,
   findAll,
   updateEvent,
-    getResults,
-    addVote
+  getResults,
+  addVote
 } from '../controllers/event'
 
 const router = express.Router();

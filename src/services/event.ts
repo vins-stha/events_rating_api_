@@ -25,7 +25,7 @@ const findById = async (id: string): Promise<EventDocument | any> => {
 }
 
 const findAll = async (): Promise<EventDocument[]> => {
-  return Event.find( {},{"_id":0,  "dates":0, "__v":0, "votes":0})//.populate('votes')
+  return Event.find( {},{"_id":0,  "dates":0, "__v":0, "votes":0})
 
 };
 
@@ -60,15 +60,7 @@ const getResults = async (eventId:number): Promise<EventDocument[] | any> => {
       votersArray.push(voter.name)
     })
   }
-  console.log('voterlsit', votersArray)
 
-  const foundEvent = await Event
-      .findOne({eventId: eventId}, {"_id": 0, "__v": 0})
-      .populate({
-        path: "votes",
-        match: {"people": {$all: votersArray}}
-
-      })
   return Event
       .findOne({eventId: eventId}, {"_id": 0, "__v": 0, "dates": 0})
       .populate({
@@ -81,7 +73,6 @@ const getResults = async (eventId:number): Promise<EventDocument[] | any> => {
         }
       })
 };
-
 
 const update = async (
     event_id: string,
@@ -99,7 +90,6 @@ const update = async (
 }
 
 const deleteEvent = async (eventId: number): Promise<EventDocument | null> => {
-  // const foundEvent = Event.findByIdAndDelete(eventId)
   const foundEvent = await Event.findOne({eventId: eventId})
   if (!foundEvent) {
     throw new NotFoundError(`Event ${eventId} not found`)
@@ -111,7 +101,6 @@ const deleteEvent = async (eventId: number): Promise<EventDocument | null> => {
 
 const getLastEventId = async():Promise<EventDocument | null >=>{
   try {
-    // let event:Promise<EventDocument> | any = await Event.findOne({$query:{}, $orderby:{$natural:-1}});
     let events = await Event.find();
     if(events.length > 0){
       return events[events.length -1]
