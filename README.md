@@ -223,7 +223,20 @@
  
     }`
  
- 
+ ### ` /api/v1/voter` 
+    - Method : GET
+    - List all the voters
+### ` /api/v1/voter/:name`
+    - Method DELETE
+    - Delete user
+### ` /api/v1/voter`
+    - METHOD: POST
+    - Add new voter
+    - Example Request Body:
+    
+    {
+        "name": "Tom Hanks"
+    }
  ## Deployed version can ve viewd here:
     https://event-rating-api.herokuapp.com/api/v1/event/1
  
